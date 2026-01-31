@@ -1,8 +1,8 @@
 <!-- 元件需要的功能
 - [ ] 可支援 4-8 位數字驗證碼（預設 6 位） // ok
 - [ ] 輸入數字或是 Tab 後自動跳到下一格 // ok
-- [ ] 按 Backspace 回到上一格 
-- [ ] 任何輸入框內可一次貼上完整驗證碼
+- [ ] 按 Backspace 回到上一格 // ok
+- [ ] 任何輸入框內可一次貼上完整驗證碼  // ok
 - [ ] 只允許輸入 0-9 數字 // ok
 - [ ] 輸入完成時觸發 complete 事件 // ok
 - [ ] 支援錯誤樣式和訊息顯示
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 
-type Props = {  
+type Props = { 
   length?: number;
   error?: boolean;
   errorMessage?: string;
@@ -56,12 +56,16 @@ const focusInputByIndex = (index: number) => {
   otpInputEl.value[index].focus();
 }
 
+const selectInputByIndex = (index: number) => {
+  otpInputEl.value[index].select();
+}
+
 const handleInput = (event: Event, index: number) => {
   const inputValue = (event.target as HTMLInputElement).value;
   const input = event.target as HTMLInputElement;
-
   if (!validateInput(inputValue)) {
     input.value = '';
+    otpData.value[index] = '';
     return;
   }
 
@@ -75,7 +79,36 @@ const handleInput = (event: Event, index: number) => {
   }
 }
 
+// 處理貼上
+const handlePaste = (event: ClipboardEvent, index: number) => {
+  const clipboardData = event.clipboardData;
+  if(!clipboardData) return;
+  
+  const pastedData = clipboardData.getData('text');
+  // 字串先轉成陣列 再過濾掉非數字的值 
+  pastedData.split('').filter(item => validateInput(item)).forEach((item, index) => {
+    otpData.value[index] = item;
+  });
+}
 
+const handleKeyDown = (event: KeyboardEvent, index: number) => {
+  switch(event.key) {
+    case 'Backspace':  // 刪除鍵
+      // 開啟阻止預設行為，有值先清空，沒值才退回上一格
+      // event.preventDefault(); 
+      if(otpData.value[index] !== '') {
+        otpData.value[index] = '';
+        return;
+      }
+      if(index > 0) {
+        focusInputByIndex(index - 1);
+        selectInputByIndex(index - 1);
+      }
+      break;
+    default:
+      break;
+  }
+}
 
 onMounted(() => {
   otpData.value = Array.from({ length: otpLength.value }, () => '');
@@ -84,19 +117,21 @@ onMounted(() => {
 </script>
 <template>
   <div class="flex flex-col w-full h-dvh justify-center items-center bg-gray-200">
-    <div class="sm:flex sm:items-center sm:justify-center gap-2 h-20">
+    <div class="sm:flex sm:items-center sm:justify-center gap-2">
       <input
         v-for="(item, index) in otpData"
         :key="index"
         :value="item"
-        :ref="(el) => { if(el) otpInputEl[index] = el as HTMLInputElement }"
+        ref="otpInputEl"
         type="text"
         maxlength="1"
         inputmode="numeric"
         autocomplete="one-time-code"
-        class="w-20 h-full rounded-xl border-2 border-gray-600 bg-white px-3 py-2 text-center text-2xl text-black outline-0"
+        class="w-20 h-20 rounded-xl border-2 border-gray-600 bg-white px-3 py-2 text-center text-2xl text-black outline-0"
         :disabled="props.disabled"
         @input="handleInput($event, index)"
+        @paste="handlePaste($event, index)"
+        @keydown="handleKeyDown($event, index)"
       >
     </div>
   </div>
