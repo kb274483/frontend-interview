@@ -50,12 +50,9 @@ const isComplete = computed(() => { // 檢查是否輸入完成
   return otpData.value.every(item => item !== '' && validateInput(item));
 });
 
-// 驗證錯誤時清空輸入匡，並回到第一格
+// 驗證錯誤時清空輸入匡
 watch(() => props.error, (newVal) => {
-  if(newVal) {
-    focusInputByIndex(0);
-    otpData.value = Array.from({ length: otpLength.value }, () => '');
-  }
+  if(newVal) otpData.value = Array.from({ length: otpLength.value }, () => '');
 });
 
 // 限制輸入的值（只接受 0-9 ）
