@@ -2,8 +2,7 @@
   "name": "frontend-interview",
   "version": "0.0.0",
   "private": true,
-  "type": "module", 
-  2tgtg
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -31,7 +30,7 @@
     "@vee-validate/zod": "4.15.0",
     "@vueuse/core": "12.5.0",
     "@vueuse/nuxt": "12.5.0",
-    "eslint": "8.53.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-nuxt": "4.0.0",
     "eslint-plugin-tailwindcss": "3.18.0",
     "eslint-plugin-vue": "9.32.0",
