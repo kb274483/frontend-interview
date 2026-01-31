@@ -11,6 +11,7 @@
 補上：
   驗證成功的訊息顯示3秒後消失
   驗證失敗時，清空輸入匡，並回到第一格
+  submit 按鈕？ 參考預覽圖片 assets/preview.png
 -->
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
@@ -119,6 +120,12 @@ const handleKeyDown = (event: KeyboardEvent, index: number) => {
   }
 }
 
+const handleSubmit = () => {
+  if(props.disabled) return;
+  if(!isComplete.value) return;
+  emit('complete', otpData.value.join(''));
+}
+
 onMounted(() => {
   otpData.value = Array.from({ length: otpLength.value }, () => '');
 });
@@ -170,6 +177,16 @@ onMounted(() => {
           </div>
         </div>
       </transition>
+    </div>
+    <div>
+      <button @click="handleSubmit()"
+        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 mt-12"
+        :class="{
+          'bg-gray-500 hover:bg-gray-400 text-gray-300 cursor-not-allowed': props.disabled,
+        }"
+      >
+        Submit
+      </button>
     </div>
   </div>
 </template>
