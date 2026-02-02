@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 
 type otpResData = {
   success: boolean
@@ -23,21 +23,20 @@ const resetStatus = () => {
   disabledComponent.value = false
 }
 
-const verifyOtp = async (value: string)=>{ 
+const verifyOtp = async (value: string) => {
   try {
     const res = await useHttp().post('/examples/verify-otp-simple', {
       body: {
         otp: value
       }
     }) as otpResData
-    if(res.success) {
+    if (res.success) {
       verifySuccess.value = true
       verifySuccessMessage.value = 'Verify Success'
     } else {
       verifyError.value = true
       verifyErrorMessage.value = ' Verify Failed'
     }
-
   } catch (error) {
     console.error(error)
     verifyError.value = true
@@ -57,12 +56,12 @@ const handleComplete = (value: string) => {
 </script>
 
 <template>
-  <BaseInputOtp 
-    @complete="handleComplete"
+  <BaseInputOtp
     :disabled="disabledComponent"
-    :error="verifyError" 
-    :error-message="verifyErrorMessage" 
-    :success="verifySuccess" 
-    :success-message="verifySuccessMessage" 
+    :error="verifyError"
+    :error-message="verifyErrorMessage"
+    :success="verifySuccess"
+    :success-message="verifySuccessMessage"
+    @complete="handleComplete"
   />
 </template>

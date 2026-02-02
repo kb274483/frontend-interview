@@ -35,9 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   successMessage: ''
 })
 
-const emit = defineEmits<{
- (e: 'complete', value: string): void
-}>()
+const emit = defineEmits <{(e: 'complete', value: string): void }> ()
 
 const otpLength = computed(() => {
   const length = props.length ?? 6
