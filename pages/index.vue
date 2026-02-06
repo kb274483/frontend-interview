@@ -9,11 +9,13 @@ type OtpResData = {
   }
 }
 
-const feedback = ref<{
+type FeedbackMessage = {
   show: boolean
   type: 'success' | 'error'
   message: string
-}>({
+}
+
+const feedback = ref<FeedbackMessage>({
   show: false,
   type: 'error',
   message: ''

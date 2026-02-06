@@ -10,7 +10,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useOtpInput } from '~/composables/useOtpInput'
+import { useOtpInput } from '~/composables/inputOtp/useOtpInput'
 
 type Props = {
   modelValue: string
