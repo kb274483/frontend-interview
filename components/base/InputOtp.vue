@@ -75,11 +75,6 @@ const inputClass = computed(() => {
   }
   return `${baseInputClass} border-gray-600 focus:border-blue-400 focus:ring-blue-200`
 })
-
-// 驗證錯誤時清空輸入框
-watch(() => props.error, (newVal) => {
-  if (newVal) { updateOtp(Array.from({ length: otpLength.value }, () => '')) }
-})
 </script>
 
 <template>

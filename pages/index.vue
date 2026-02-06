@@ -48,6 +48,7 @@ const verifyOtp = async (value: string) => {
     feedback.value = { show: true, type: 'error', message: 'Please try again later' }
   } finally {
     setTimeout(() => {
+      if(feedback.value.type === 'error') otpValue.value = ''
       resetStatus()
     }, 3000)
   }
