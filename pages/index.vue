@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-type otpResData = {
+type OtpResData = {
   success: boolean
   data: {
     verified: boolean
@@ -9,22 +9,23 @@ type otpResData = {
   }
 }
 
-const verifyError = ref(false)
-const verifyErrorMessage = ref('')
-const verifySuccess = ref(false)
-const verifySuccessMessage = ref('')
+const feedback = ref<{
+  show: boolean
+  type: 'success' | 'error'
+  message: string
+}>({
+  show: false,
+  type: 'error',
+  message: ''
+})
+
 const disabledComponent = ref(false)
-
-
-const cols = 6
+const cols = ref(3)
 const otpValue = ref('')
 const checkOtpLength = ref(6)
 
 const resetStatus = () => {
-  verifyError.value = false
-  verifyErrorMessage.value = ''
-  verifySuccess.value = false
-  verifySuccessMessage.value = ''
+  feedback.value = { show: false, type: 'error', message: '' }
   disabledComponent.value = false
 }
 
@@ -34,18 +35,15 @@ const verifyOtp = async (value: string) => {
       body: {
         otp: value
       }
-    }) as otpResData
+    }) as OtpResData
     if (res.success) {
-      verifySuccess.value = true
-      verifySuccessMessage.value = 'Verify Success'
+      feedback.value = { show: true, type: 'success', message: 'Verify Success' }
     } else {
-      verifyError.value = true
-      verifyErrorMessage.value = ' Verify Failed'
+      feedback.value = { show: true, type: 'error', message: 'Verify Failed' }
     }
   } catch (error) {
     console.error(error)
-    verifyError.value = true
-    verifyErrorMessage.value = 'Please try again later'
+    feedback.value = { show: true, type: 'error', message: 'Please try again later' }
   } finally {
     setTimeout(() => {
       resetStatus()
@@ -53,30 +51,29 @@ const verifyOtp = async (value: string) => {
   }
 }
 
-// const handleComplete = (value: string) => {
-//   disabledComponent.value = true
-//   verifyOtp(value)
-// }
-
 watch(otpValue, (newVal) => {
   if (newVal.length === checkOtpLength.value) {
     disabledComponent.value = true
     verifyOtp(newVal)
   }
 })
-
 </script>
 
 <template>
-  <BaseInputOtp
-    v-model="otpValue"
-    :cols="cols"
-    :disabled="disabledComponent"
-    :error="verifyError"
-    :error-message="verifyErrorMessage"
-    :success="verifySuccess"
-    :success-message="verifySuccessMessage"
-  />
-</template>
+  <div class="flex h-dvh w-full flex-col items-center justify-center bg-gray-200">
+    <BaseInputOtp
+      v-model="otpValue"
+      :cols="cols"
+      :disabled="disabledComponent"
+      :error="feedback.type === 'error' && feedback.show"
+      :success="feedback.type === 'success' && feedback.show"
+    />
 
-<!-- @complete="handleComplete" -->
+    <!-- 驗證訊息 -->
+    <BaseFeedbackMessage
+      :show="feedback.show"
+      :type="feedback.type"
+      :message="feedback.message"
+    />
+  </div>
+</template>
