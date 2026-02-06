@@ -17,6 +17,8 @@
 import { ref, onMounted, computed } from 'vue'
 
 type Props = {
+  modelValue:string;
+  cols?: number;
   length?: number;
   error?: boolean;
   errorMessage?: string;
@@ -28,6 +30,8 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   length: 6,
+  cols: 6,
+  modelValue: '',
   error: false,
   errorMessage: '',
   disabled: false,
@@ -35,7 +39,10 @@ const props = withDefaults(defineProps<Props>(), {
   successMessage: ''
 })
 
-const emit = defineEmits <{(e: 'complete', value: string): void }> ()
+const emit = defineEmits <{
+  // (e: 'complete', value: string): void 
+  (e: 'update:modelValue', value: string): void
+}> ()
 
 const otpLength = computed(() => {
   const length = props.length ?? 6
@@ -45,14 +52,30 @@ const otpLength = computed(() => {
 const otpData = ref<string[]>([]) // 儲存輸入的值
 const otpInputEl = ref<HTMLInputElement[]>([]) // 儲存 input 元素DOM
 
-const isComplete = computed(() => { // 檢查是否輸入完成
-  return otpData.value.every(item => item !== '' && validateInput(item))
-})
+// const isComplete = computed(() => { // 檢查是否輸入完成
+//   return otpData.value.every(item => item !== '' && validateInput(item))
+// })
 
 // 驗證錯誤時清空輸入匡
 watch(() => props.error, (newVal) => {
   if (newVal) { otpData.value = Array.from({ length: otpLength.value }, () => '') }
 })
+
+watch(() => props.modelValue, (newVal) => {
+  if (newVal !== otpData.value.join('')) {
+    const newArr = Array.from({ length: otpLength.value }, () => '')
+    const splitVal = newVal.split('').slice(0, otpLength.value)
+    splitVal.forEach((char, index) => {
+      newArr[index] = char
+    })
+    otpData.value = newArr
+  }
+}, { immediate: true })
+
+const emitUpdate = () => {
+  const currentValue = otpData.value.join('')
+  emit('update:modelValue', currentValue)
+}
 
 // 限制輸入的值（只接受 0-9 ）
 const validateInput = (value: string) => {
@@ -76,15 +99,16 @@ const handleInput = (event: Event, index: number) => {
     otpData.value[index] = ''
     return
   }
-
   otpData.value[index] = inputValue
+  emitUpdate()
+
   if (index < otpLength.value - 1) {
     focusInputByIndex(index + 1)
   }
 
-  if (isComplete.value) {
-    emit('complete', otpData.value.join(''))
-  }
+  // if (isComplete.value) {
+  //   emit('complete', otpData.value.join(''))
+  // }
 }
 
 // 處理貼上
@@ -98,6 +122,7 @@ const handlePaste = (event: ClipboardEvent) => {
   pastedData.split('').filter(item => validateInput(item)).forEach((item, index) => {
     otpData.value[index] = item
   })
+  emitUpdate()
 }
 
 const handleKeyDown = (event: KeyboardEvent, index: number) => {
@@ -107,6 +132,7 @@ const handleKeyDown = (event: KeyboardEvent, index: number) => {
       // event.preventDefault();
       if (otpData.value[index] !== '') {
         otpData.value[index] = ''
+        emitUpdate()
         return
       }
       if (index > 0) {
@@ -119,11 +145,11 @@ const handleKeyDown = (event: KeyboardEvent, index: number) => {
   }
 }
 
-const handleSubmit = () => {
-  if (props.disabled) { return }
-  if (!isComplete.value) { return }
-  emit('complete', otpData.value.join(''))
-}
+// const handleSubmit = () => {
+//   if (props.disabled) { return }
+//   if (!isComplete.value) { return }
+//   emit('complete', otpData.value.join(''))
+// }
 
 onMounted(() => {
   otpData.value = Array.from({ length: otpLength.value }, () => '')
@@ -133,11 +159,12 @@ onMounted(() => {
 <template>
   <div class="flex h-dvh w-full flex-col items-center justify-center bg-gray-200">
     <div
-      class="relative flex items-center justify-center gap-2"
-      :class="{
-        'grid grid-cols-4 sm:flex' : otpLength == 8, // 行動裝置樣式
+      class="relative items-center justify-center gap-2 grid"
+      :style="{
+        gridTemplateColumns: props.cols ? `repeat(${props.cols}, 1fr)` : 'auto'
       }"
-    >
+      >
+      <!-- :class="props.cols ? `grid grid-cols-${props.cols}` : 'flex'" -->
       <input
         v-for="(item, index) in otpData"
         :key="index"
@@ -184,7 +211,7 @@ onMounted(() => {
         </div>
       </transition>
     </div>
-    <div>
+    <!-- <div>
       <button
         class="mt-12 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-400"
         :class="{
@@ -194,7 +221,7 @@ onMounted(() => {
       >
         Submit
       </button>
-    </div>
+    </div> -->
   </div>
 </template>
 
